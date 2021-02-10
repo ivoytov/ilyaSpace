@@ -8,7 +8,7 @@ class SpaceTest(unittest.TestCase):
         self.df = read_data()
 
     def test_data_import(self):
-        self.assertEqual(self.df.shape, (3141,3))
+        self.assertEqual(self.df.shape, (3027, 3))
 
     def test_bad_sat_id(self):
         out = get_last_position(self.df, 'UFO')
@@ -29,6 +29,16 @@ class SpaceTest(unittest.TestCase):
         self.assertIsNone(out)
 
 
+    def test_dist_reg(self):
+        # almost exact location
+        coord = (-42.7, 67.0)
+        sat_id, dist = get_closest_sat(self.df, coord, pd.Timestamp('2021-01-26 14:26:10'))
+        self.assertEqual(sat_id, '5f889669c86e27000615b262')
+
+    def test_bad_sat(self):
+        # uses today's date, when no data is available
+        coord = (-42.7, 67.0)
+        self.assertRaises(KeyError, get_closest_sat, self.df, coord)
 
 if __name__ == '__main__':
     unittest.main()
