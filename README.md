@@ -5,3 +5,7 @@ To run the program from command line and use the interface:
 
 To run tests:
 ```python3 -m unittest tests.py```
+
+Dockerized:
+Build: ```docker build -t ilyaspace .```
+Run interactively: ```docker run -it ilyaspace```

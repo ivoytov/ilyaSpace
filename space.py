@@ -13,7 +13,12 @@ def read_data(con) -> None:
     :con: SQL connection
     """
     df = pd.read_json("starlink_historical_data.json")
-    creation_date = pd.to_datetime(df.spaceTrack.apply(lambda x: x["CREATION_DATE"])).astype(np.int64) // 10 ** 9
+    creation_date = (
+        pd.to_datetime(df.spaceTrack.apply(lambda x: x["CREATION_DATE"])).astype(
+            np.int64
+        )
+        // 10 ** 9
+    )
     df = (
         pd.concat([df[["id", "longitude", "latitude"]], creation_date], axis=1)
         .set_index("spaceTrack")
@@ -34,7 +39,10 @@ def get_last_position(
     Returns last known position as tuple of [lat, long]
     """
     df = pd.read_sql(
-        f"SELECT * from space WHERE sat_id == '{sat_id}' and spaceTrack <= {datetime.timestamp()} ORDER BY spaceTrack DESC LIMIT 1", con=con, index_col="spaceTrack", parse_dates="spaceTrack"
+        f"SELECT * from space WHERE sat_id == '{sat_id}' and spaceTrack <= {datetime.timestamp()} ORDER BY spaceTrack DESC LIMIT 1",
+        con=con,
+        index_col="spaceTrack",
+        parse_dates="spaceTrack",
     )
     out = df[(df.sat_id == sat_id) & (df.index <= datetime)]
     if len(out):
@@ -53,7 +61,10 @@ def get_closest_sat(
     returns None if no satellites found or id of the sat
     """
     df = pd.read_sql(
-        f"SELECT * FROM space WHERE spaceTrack == {datetime.timestamp()}", con=con, index_col="spaceTrack", parse_dates="spaceTrack"
+        f"SELECT * FROM space WHERE spaceTrack == {datetime.timestamp()}",
+        con=con,
+        index_col="spaceTrack",
+        parse_dates="spaceTrack",
     )
     sats = df.loc[datetime].set_index("sat_id")
 
@@ -76,8 +87,10 @@ def _get_date() -> pd.Timestamp:
 def main():
     with closing(sq3.connect("space.db")) as con:
         while True:
-            val = input("Enter 1 to get last position, 2 to get closest sat, 3 to read data, [Enter] to exit")
-            if val == '1':
+            val = input(
+                "Enter 1 to get last position, 2 to get closest sat, 3 to read data, [Enter] to exit"
+            )
+            if val == "1":
                 sat_id = input("Enter satetllite id:")
                 if len(sat_id) != 24:
                     print("Satellite ids must be 24 chars long")
@@ -89,7 +102,7 @@ def main():
                     continue
                 print("Last position", get_last_position(con, sat_id, datetime))
 
-            elif val == '2':
+            elif val == "2":
                 try:
                     lat = float(input("Enter latitude:"))
                     lon = float(input("Enter longitude:"))
@@ -103,13 +116,11 @@ def main():
                     continue
 
                 sat_id, dist = get_closest_sat(con, (lat, lon), datetime)
-                print("Closest satellite id", sat_id, "distance (kms)", round(dist,2))
-            elif val == '3':
+                print("Closest satellite id", sat_id, "distance (kms)", round(dist, 2))
+            elif val == "3":
                 read_data(con)
             else:
                 break
-
-
 
 
 if __name__ == "__main__":
