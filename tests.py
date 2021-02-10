@@ -1,11 +1,13 @@
 import unittest
 import pandas as pd
+from contextlib import closing
 
 from space import *
 
 class SpaceTest(unittest.TestCase):
     def setUp(self):
-        self.con = read_data()
+        self.con = sq3.connect("space.db")
+        read_data(self.con)
 
     def test_data_import(self):
         df = pd.read_sql(
